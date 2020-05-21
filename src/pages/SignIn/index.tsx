@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { Platform } from 'react-native';
+
+import ReactNativeBiometric from 'react-native-biometrics';
 
 import Icon from 'react-native-vector-icons/Feather';
-
-import Logo from '../../assets/locker_53876-25496.png';
 
 import {
   Container,
@@ -20,6 +21,8 @@ import {
   ModalButtonText,
 } from './styles';
 
+import Logo from '../../assets/locker_53876-25496.png';
+
 const SignIn: React.FC = () => {
   const [password, setPassword] = useState('');
   const [hidePassword, setHidePassword] = useState(true);
@@ -36,7 +39,17 @@ const SignIn: React.FC = () => {
   const [errorMessage, setErrorMessage] = useState('');
   const [biometryType, setbiometryType] = useState('');
 
-  useEffect(() => {}, []);
+  // const checkBiometrics = useCallback(async (): Promise<string> => {
+  //   console.log('teste');
+
+  //   return 'Gabriel';
+  // }, []);
+
+  // useEffect(() => {
+  //   const name = checkBiometrics();
+
+  //   console.log(name);
+  // }, []);
 
   return (
     <Container>

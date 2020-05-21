@@ -1,9 +1,16 @@
-import React from 'react';
+import 'react-native-gesture-handler';
 
-import SignIn from './pages/SignIn';
+import React from 'react';
+import { NavigationContainer } from '@react-navigation/native';
+
+import Routes from './routes';
 
 const App: React.FC = () => {
-  return <SignIn />;
+  return (
+    <NavigationContainer>
+      <Routes />
+    </NavigationContainer>
+  );
 };
 
 export default App;
