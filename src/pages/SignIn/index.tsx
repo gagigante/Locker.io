@@ -1,7 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Platform } from 'react-native';
+import { Keyboard } from 'react-native';
+import ReactNativeBiometrics from 'react-native-biometrics';
 
-import ReactNativeBiometric from 'react-native-biometrics';
+import Modal from 'react-native-modal';
+import Lottie from 'lottie-react-native';
 
 import Icon from 'react-native-vector-icons/Feather';
 
@@ -22,6 +24,8 @@ import {
 } from './styles';
 
 import Logo from '../../assets/locker_53876-25496.png';
+import errorAnimation from '../../assets/11201-fail.json';
+import fingerprintAnimation from '../../assets/lf30_editor_7MsGRA.json';
 
 const SignIn: React.FC = () => {
   const [password, setPassword] = useState('');
@@ -35,21 +39,23 @@ const SignIn: React.FC = () => {
   );
   const [shouldRequestBiometry, setShouldRequestBiometry] = useState(true);
 
+  const [availableSensor, setAvailableSensor] = useState<
+    'TouchID' | 'FaceID' | 'Biometrics' | undefined
+  >(undefined);
+
   // ONLY FOR DEBUG INFO
   const [errorMessage, setErrorMessage] = useState('');
-  const [biometryType, setbiometryType] = useState('');
+  // const [biometryType, setbiometryType] = useState('');
 
-  // const checkBiometrics = useCallback(async (): Promise<string> => {
-  //   console.log('teste');
+  useEffect(() => {
+    async function getAvailableSensors(): Promise<void> {
+      const { biometryType } = await ReactNativeBiometrics.isSensorAvailable();
 
-  //   return 'Gabriel';
-  // }, []);
+      setAvailableSensor(biometryType);
+    }
 
-  // useEffect(() => {
-  //   const name = checkBiometrics();
-
-  //   console.log(name);
-  // }, []);
+    getAvailableSensors();
+  }, []);
 
   return (
     <Container>
@@ -64,14 +70,8 @@ const SignIn: React.FC = () => {
         <TextInput
           value={password}
           onChangeText={setPassword}
-          // onFocus={() => handleFingerprintShowed()}
-          onFocus={() => {
-            console.log('teste');
-          }}
-          // onSubmitEditing={() => handleSubmit()}
-          onSubmitEditing={() => {
-            console.log('teste');
-          }}
+          onFocus={() => handleFingerprintShowed()}
+          onSubmitEditing={() => handleSubmit()}
           autoCapitalize="none"
           autoCompleteType="off"
           autoCorrect={false}
@@ -88,29 +88,49 @@ const SignIn: React.FC = () => {
         </HideButton>
       </InputView>
 
-      <Button onPress={() => console.log('teste')}>
-        <ButtonText> LOGIN </ButtonText>
+      <Button onPress={() => handleSubmit()}>
+        <ButtonText>LOGIN</ButtonText>
       </Button>
 
-      {/* <Modal isVisible={isModalVisible}>
+      <Modal isVisible={isModalVisible}>
         <ModalView>
-          <Lottie style={{ width: 125 }} resizeMode="contain" source={errorAnimation} autoPlay loop={false} />
+          <Lottie
+            style={{ width: 125 }}
+            resizeMode="contain"
+            source={errorAnimation}
+            autoPlay
+            loop={false}
+          />
           <ModalText>{modalText}</ModalText>
-          <ModalButton onPress={() => {setIsModalVisible(false)}}>
+          <ModalButton
+            onPress={() => {
+              setIsModalVisible(false);
+            }}
+          >
             <ModalButtonText>Fechar</ModalButtonText>
           </ModalButton>
         </ModalView>
       </Modal>
 
       <Modal isVisible={isFingerprintModalVisible}>
-       <ModalView>
-          <Lottie style={{ width: 150 }} resizeMode="contain" source={fingerprintAnimation} autoPlay loop={false} />
+        <ModalView>
+          <Lottie
+            style={{ width: 150 }}
+            resizeMode="contain"
+            source={fingerprintAnimation}
+            autoPlay
+            loop={false}
+          />
           <ModalText>Entre usando sua digital</ModalText>
-          <ModalButton onPress={() => {handleFingerprintDismissed()}}>
+          <ModalButton
+            onPress={() => {
+              handleFingerprintDismissed();
+            }}
+          >
             <ModalButtonText>Usar senha</ModalButtonText>
           </ModalButton>
         </ModalView>
-      </Modal> */}
+      </Modal>
     </Container>
   );
 };

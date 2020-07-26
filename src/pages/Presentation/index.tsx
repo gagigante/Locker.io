@@ -1,3 +1,4 @@
+/* eslint-disable global-require */
 import React, { useEffect } from 'react';
 // import { StyleSheet, View, TouchableOpacity, Text } from 'react-native';
 // import AsyncStorage from '@react-native-community/async-storage';
@@ -65,7 +66,7 @@ const Presentation: React.FC = () => {
       data={slides}
       renderItem={({ item }) => (
         <SlideView>
-          <SlideImage source={require('imglogo')} />
+          <SlideImage source={imglogo} />
           <SlideTextView>
             <SlideTitle>{item.title}</SlideTitle>
             <SlideText>{item.text}</SlideText>
