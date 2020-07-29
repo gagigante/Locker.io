@@ -1,15 +1,16 @@
 import React from 'react';
 import { View, ActivityIndicator } from 'react-native';
 
-import AuthRoutes from './auth.routes';
 import AppRoutes from './app.routes';
 
 import Presentation from '../pages/Presentation';
+import SignUp from '../pages/SignUp';
+import SignIn from '../pages/SignIn';
 
 import { useAuth } from '../hooks/auth';
 
 const Routes: React.FC = () => {
-  const { user, loading, isFirstAccess } = useAuth();
+  const { loading, appStage } = useAuth();
 
   if (loading) {
     return (
@@ -26,11 +27,19 @@ const Routes: React.FC = () => {
     );
   }
 
-  if (isFirstAccess) {
-    return <Presentation />;
+  // if (user) {
+  //   return <AppRoutes />;
+  // }
+
+  if (appStage === '1') {
+    return <SignUp />;
   }
 
-  return user ? <AppRoutes /> : <AuthRoutes />;
+  if (appStage === '2') {
+    return <SignIn />;
+  }
+
+  return <Presentation />;
 };
 
 export default Routes;

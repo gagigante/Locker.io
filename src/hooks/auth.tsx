@@ -19,9 +19,9 @@ interface SignInCredentials {
 }
 
 interface AuthContextData {
-  user: User | undefined;
   loading: boolean;
-  isFirstAccess: boolean;
+  appStage: string | undefined;
+  changeAppStage(stage: '1' | '2' | undefined): Promise<void>;
   signIn(credentials: SignInCredentials): Promise<void>;
   signOut(): void;
 }
@@ -30,34 +30,21 @@ const AuthContext = createContext<AuthContextData>({} as AuthContextData);
 
 const AuthProvider: React.FC = ({ children }) => {
   const [loading, setLoading] = useState(true);
-  const [isFirstAccess, setIsFirstAccess] = useState(true);
-  const [loggedUser, setLoggedUser] = useState<User | undefined>(undefined);
+  const [appStage, setAppStage] = useState<string | undefined>(undefined);
 
   useEffect(() => {
-    async function CheckFirstAccess(): Promise<void> {
-      const firstAccess = await AsyncStorage.getItem('@LockerIO:isFirstAccess');
-
-      if (firstAccess === 'false') {
-        setIsFirstAccess(false);
-      }
-    }
-
     async function loadStoragedData(): Promise<void> {
-      const user = await AsyncStorage.getItem('@LockerIO:user');
+      const storagedAppStage = await AsyncStorage.getItem('@LockerIO:appStage');
 
-      if (user) {
-        setLoggedUser(JSON.parse(user));
+      if (storagedAppStage) {
+        setAppStage(storagedAppStage);
       }
+
+      setLoading(false);
     }
 
-    CheckFirstAccess();
-
-    if (!isFirstAccess) {
-      loadStoragedData();
-    }
-
-    setLoading(false);
-  }, [isFirstAccess]);
+    loadStoragedData();
+  }, []);
 
   const signIn = useCallback(async ({ password }) => {
     const realm = await getRealm();
@@ -83,9 +70,25 @@ const AuthProvider: React.FC = ({ children }) => {
     setLoggedUser(undefined);
   }, []);
 
+  const changeAppStage = useCallback(async (stage: '1' | '2' | undefined) => {
+    if (stage) {
+      await AsyncStorage.setItem('@LockerIO:appStage', stage);
+    } else {
+      await AsyncStorage.removeItem('@LockerIO:appStage');
+    }
+
+    setAppStage(stage);
+  }, []);
+
   return (
     <AuthContext.Provider
-      value={{ user: loggedUser, loading, isFirstAccess, signIn, signOut }}
+      value={{
+        loading,
+        appStage,
+        changeAppStage,
+        signIn,
+        signOut,
+      }}
     >
       {children}
     </AuthContext.Provider>

@@ -1,10 +1,12 @@
 /* eslint-disable global-require */
-import React, { useEffect } from 'react';
-// import { StyleSheet, View, TouchableOpacity, Text } from 'react-native';
-// import AsyncStorage from '@react-native-community/async-storage';
+import React, { useCallback } from 'react';
+import AsyncStorage from '@react-native-community/async-storage';
 import AppIntroSlider from 'react-native-app-intro-slider';
+import { useNavigation } from '@react-navigation/native';
 
 import Icon from 'react-native-vector-icons/Feather';
+
+import { useAuth } from '../../hooks/auth';
 
 import {
   SlideView,
@@ -17,16 +19,16 @@ import {
   ViewButton,
 } from './styles';
 
-import imglogo from '../../assets/locker_53876-25496.png';
+interface Islides {
+  key: string;
+  title: string;
+  text: string;
+  image: NodeRequire;
+  color: string;
+}
 
 const Presentation: React.FC = () => {
-  interface Islides {
-    key: string;
-    title: string;
-    text: string;
-    image: NodeRequire;
-    backgroundColor: string[];
-  }
+  const { changeAppStage } = useAuth();
 
   const slides: Islides[] = [
     {
@@ -34,14 +36,14 @@ const Presentation: React.FC = () => {
       title: 'Olá :)',
       text: 'Esse é o Locker.io, seu gerenciador de senhas.',
       image: require('../../assets/locker_53876-25496.png'),
-      backgroundColor: ['#fb7a65', '#f83f61'],
+      color: '#f83f61',
     },
     {
       key: '1',
       title: 'Guarde todas as suas senhas',
       text: 'Mantenha todas as suas senhas sempre ao seu alcance.',
       image: require('../../assets/safe-box.png'),
-      backgroundColor: ['#d4fc79', '#96e6a1'],
+      color: '#96e6a1',
     },
     {
       key: '2',
@@ -49,7 +51,7 @@ const Presentation: React.FC = () => {
       text:
         'E-mails, serviços, contas bancárias... Você pode classificar tudo e deixar ainda mais simples!',
       image: require('../../assets/organizer.png'),
-      backgroundColor: ['#764ba2', '#667eea'],
+      color: '#667eea',
     },
     {
       key: '3',
@@ -57,16 +59,20 @@ const Presentation: React.FC = () => {
       text:
         'Não se preocupe, suas senhas estão seguras aqui. Nada de sair espalhando, hein!',
       image: require('../../assets/bd-wallpaper.png'),
-      backgroundColor: ['#4facfe', '#00f2fe'],
+      color: '#14d1db',
     },
   ];
+
+  const handleSubmit = useCallback(async () => {
+    await changeAppStage('1');
+  }, [changeAppStage]);
 
   return (
     <AppIntroSlider
       data={slides}
-      renderItem={({ item }) => (
-        <SlideView>
-          <SlideImage source={imglogo} />
+      renderItem={({ item }: { item: Islides }) => (
+        <SlideView color={item.color}>
+          <SlideImage source={item.image} />
           <SlideTextView>
             <SlideTitle>{item.title}</SlideTitle>
             <SlideText>{item.text}</SlideText>
@@ -75,26 +81,18 @@ const Presentation: React.FC = () => {
       )}
       showSkipButton
       renderSkipButton={() => (
-        <Button
-          onPress={() => {
-            console.log('enter');
-          }}
-        >
+        <Button onPress={handleSubmit}>
           <ButtonText>Pular</ButtonText>
         </Button>
       )}
       renderDoneButton={() => (
-        <Button
-          onPress={() => {
-            console.log('enter');
-          }}
-        >
-          <Icon name="arrow-right" size={20} color="#ff9000" />
+        <Button onPress={handleSubmit}>
+          <Icon name="arrow-right" size={20} color="#fff" />
         </Button>
       )}
       renderNextButton={() => (
         <ViewButton>
-          <Icon name="arrow-right" size={20} color="#ff9000" />
+          <Icon name="arrow-right" size={20} color="#fff" />
         </ViewButton>
       )}
     />

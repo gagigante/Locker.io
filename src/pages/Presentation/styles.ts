@@ -1,28 +1,17 @@
 import styled from 'styled-components/native';
-// import LinearGradient from 'react-native-linear-gradient';
 
-// interface IslideViewProps {
-//   colors: string[];
-// }
+interface IslideViewProps {
+  color: string;
+}
 
 export const Container = styled.View``;
 
-export const SlideView = styled.View`
+export const SlideView = styled.View<IslideViewProps>`
   flex: 1;
   justify-content: center;
   align-items: center;
-  background-color: blue;
+  background-color: ${(props) => props.color};
 `;
-
-// export const SlideView = styled(LinearGradient).attrs({
-//   colors: ['#d4fc79', '#96e6a1'],
-//   start: { x: 0, y: 0 },
-//   end: { x: 1, y: 1 },
-// })`
-//   flex: 1;
-//   justify-content: center;
-//   align-items: center;
-// `;
 
 export const SlideImage = styled.Image`
   margin-bottom: 50px;
