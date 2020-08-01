@@ -1,10 +1,12 @@
 /* eslint-disable global-require */
-import React, { useCallback } from 'react';
-import AsyncStorage from '@react-native-community/async-storage';
+import React, { useCallback, useEffect } from 'react';
+import { v4 as uuidv4 } from 'uuid';
 import AppIntroSlider from 'react-native-app-intro-slider';
-import { useNavigation } from '@react-navigation/native';
+import { Alert } from 'react-native';
 
 import Icon from 'react-native-vector-icons/Feather';
+
+import getRealm from '../../database';
 
 import { useAuth } from '../../hooks/auth';
 
@@ -29,6 +31,41 @@ interface Islides {
 
 const Presentation: React.FC = () => {
   const { changeAppStage } = useAuth();
+
+  useEffect(() => {
+    async function insertDefaultCategories(): Promise<void> {
+      try {
+        const realm = await getRealm();
+
+        realm.write(() => {
+          realm.create('Category', {
+            id: uuidv4(),
+            CategoryName: 'Serviços',
+            CategoryColor: 'blue',
+          });
+          realm.create('Category', {
+            id: uuidv4(),
+            CategoryName: 'E-mail',
+            CategoryColor: 'red',
+          });
+          realm.create('Category', {
+            id: uuidv4(),
+            CategoryName: 'Banco',
+            CategoryColor: 'green',
+          });
+          realm.create('Category', {
+            id: uuidv4(),
+            CategoryName: 'Aplicativo',
+            CategoryColor: 'yellow',
+          });
+        });
+      } catch (err) {
+        Alert.alert(err);
+      }
+
+      insertDefaultCategories();
+    }
+  }, []);
 
   const slides: Islides[] = [
     {
