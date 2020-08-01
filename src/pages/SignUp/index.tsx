@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from 'react';
-import AsyncStorage from '@react-native-community/async-storage';
-import Lottie from 'lottie-react-native';
-import Modal from 'react-native-modal';
+import React, { useCallback, useState, useEffect } from 'react';
+import { v4 as uuidv4 } from 'uuid';
 import Icon from 'react-native-vector-icons/Feather';
 
-import Logo from '../../assets/locker_53876-25496.png';
-// import errorAnimation from '../../assets/11201-fail.json';
+import getRealm from '../../database';
+import { useAuth } from '../../hooks/auth';
+
+import AlertModal from '../../components/AlertModal';
 
 import {
   Container,
@@ -17,13 +17,14 @@ import {
   HideButton,
   Button,
   ButtonText,
-  ModalView,
-  ModalText,
-  ModalButton,
-  ModalButtonText,
 } from './styles';
 
+import Logo from '../../assets/locker_53876-25496.png';
+import errorAnimation from '../../assets/11201-fail.json';
+
 const SignUp: React.FC = () => {
+  const { changeAppStage } = useAuth();
+
   const [password, setPassword] = useState('');
   const [repeatPassword, setRepeatPassword] = useState('');
 
@@ -33,104 +34,40 @@ const SignUp: React.FC = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [modalText, setModalText] = useState('');
 
-  // useEffect(() => {
-  //   async function firstAccessRegistration() {
-  //     try {
-  //       await AsyncStorage.setItem('FirstAccess', '1');
-  //     } catch (error) {
-  //       // alert(error);
-  //     }
-  //   }
+  const handleHideModal = useCallback(() => {
+    setIsModalVisible(false);
+  }, []);
 
-  //   firstAccessRegistration();
-  // }, []);
+  const registerNewUser = useCallback(async () => {
+    const data = {
+      id: uuidv4(),
+      password,
+    };
 
-  // RETURNS LAST ID IN DATABASE
-  // async function getCurrentId() {
-  //   const realm = await getRealm();
-  //   const results = realm.objects('User').sorted('id');
-  //   const id = results.length > 0 ? results[results.length - 1].id + 1 : 1;
+    const realm = await getRealm();
 
-  //   return id;
-  // }
+    realm.write(() => {
+      realm.create('User', data);
+    });
 
-  // SAVE DATA IN DATABASE
-  // async function addNewUser() {
-  //   const currentId = await getCurrentId();
+    setPassword('');
+    setRepeatPassword('');
+  }, [password]);
 
-  //   const data = {
-  //     id: currentId,
-  //     password,
-  //   };
-
-  //   const realm = await getRealm();
-  //   realm.write(() => {
-  //     realm.create('User', data);
-  //   });
-
-  //   setPassword('');
-  //   setRepeatPassword('');
-  // }
-
-  // INSERT DEFAULT CATEGORIES IN DB
-  // async function insertDefaultCategories() {
-  //   try {
-  //     const realm = await getRealm();
-
-  //     realm.write(() => {
-  //       realm.create('Category', {
-  //         id: '00001',
-  //         CategoryName: 'Serviços',
-  //         CategoryColor: 'blue',
-  //       });
-  //       realm.create('Category', {
-  //         id: '00002',
-  //         CategoryName: 'E-mail',
-  //         CategoryColor: 'red',
-  //       });
-  //       realm.create('Category', {
-  //         id: '00003',
-  //         CategoryName: 'Banco',
-  //         CategoryColor: 'green',
-  //       });
-  //       realm.create('Category', {
-  //         id: '00004',
-  //         CategoryName: 'Aplicativo',
-  //         CategoryColor: 'yellow',
-  //       });
-  //       realm.create('Category', {
-  //         id: '00005',
-  //         CategoryName: 'Cartão',
-  //         CategoryColor: 'pink',
-  //       });
-  //     });
-  //   } catch (err) {
-  //     alert(err);
-  //   }
-  // }
-
-  // async function handleSubmit() {
-  //   if (password !== '' && repeatPassword !== '') {
-  //     if (password === repeatPassword) {
-  //       insertDefaultCategories();
-  //       addNewUser();
-
-  //       try {
-  //         await AsyncStorage.setItem('FirstAccess', '2');
-  //       } catch (error) {
-  //         // alert(error);
-  //       }
-
-  //       navigation.navigate('Login');
-  //     } else {
-  //       setModalText('As senhas não se correspondem!');
-  //       setIsModalVisible(true);
-  //     }
-  //   } else {
-  //     setModalText('Preencha os campos!');
-  //     setIsModalVisible(true);
-  //   }
-  // }
+  const handleSubmit = useCallback(async () => {
+    if (password !== '' && repeatPassword !== '') {
+      if (password === repeatPassword) {
+        registerNewUser();
+        changeAppStage('2');
+      } else {
+        setModalText('As senhas não se correspondem!');
+        setIsModalVisible(true);
+      }
+    } else {
+      setModalText('Preencha os campos!');
+      setIsModalVisible(true);
+    }
+  }, [changeAppStage, password, registerNewUser, repeatPassword]);
 
   return (
     <Container>
@@ -174,6 +111,7 @@ const SignUp: React.FC = () => {
           secureTextEntry={hideRepeatPassword}
           placeholder="Confirmar senha"
           placeholderTextColor="rgba(255,255,255,0.6)"
+          onSubmitEditing={handleSubmit}
         />
         <HideButton onPress={() => setHideRepeatPassword(!hideRepeatPassword)}>
           {hideRepeatPassword ? (
@@ -184,29 +122,19 @@ const SignUp: React.FC = () => {
         </HideButton>
       </InputView>
 
-      <Button onPress={() => console.log('entrou')}>
+      <Button onPress={handleSubmit}>
         <ButtonText> CRIAR CONTA </ButtonText>
       </Button>
 
-      <Modal isVisible={isModalVisible}>
-        <ModalView>
-          {/* <Lottie
-            style={{ width: 125 }}
-            resizeMode="contain"
-            source={errorAnimation}
-            autoPlay
-            loop={false}
-          /> */}
-          <ModalText>{modalText}</ModalText>
-          <ModalButton
-            onPress={() => {
-              setIsModalVisible(false);
-            }}
-          >
-            <ModalButtonText>Fechar</ModalButtonText>
-          </ModalButton>
-        </ModalView>
-      </Modal>
+      <AlertModal
+        modalState={isModalVisible}
+        animation={errorAnimation}
+        animationWidth={125}
+        animationHeight={125}
+        message={modalText}
+        buttonAction={handleHideModal}
+        buttonText="Fechar"
+      />
     </Container>
   );
 };
