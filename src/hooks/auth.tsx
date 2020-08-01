@@ -11,7 +11,7 @@ import getRealm from '../database';
 
 interface User {
   id: string;
-  name: string;
+  password: string;
 }
 
 interface SignInCredentials {
@@ -20,10 +20,11 @@ interface SignInCredentials {
 
 interface AuthContextData {
   loading: boolean;
+  userId: string | undefined;
   appStage: string | undefined;
   changeAppStage(stage: '1' | '2' | undefined): Promise<void>;
   signIn(credentials: SignInCredentials): Promise<void>;
-  signOut(): void;
+  signOut(): Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextData>({} as AuthContextData);
@@ -31,43 +32,51 @@ const AuthContext = createContext<AuthContextData>({} as AuthContextData);
 const AuthProvider: React.FC = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [appStage, setAppStage] = useState<string | undefined>(undefined);
+  const [userId, setUserId] = useState<string | undefined>(undefined);
 
   useEffect(() => {
-    async function loadStoragedData(): Promise<void> {
-      const storagedAppStage = await AsyncStorage.getItem('@LockerIO:appStage');
+    async function loadStoredData(): Promise<void> {
+      const [storedAppStage, storedUser] = await AsyncStorage.multiGet([
+        '@LockerIO:appStage',
+        '@LockerIO:user',
+      ]);
 
-      if (storagedAppStage) {
-        setAppStage(storagedAppStage);
+      if (storedAppStage[1]) {
+        setAppStage(storedAppStage[1]);
+      }
+
+      if (storedUser[1]) {
+        setUserId(storedUser[1]);
       }
 
       setLoading(false);
     }
 
-    loadStoragedData();
+    loadStoredData();
   }, []);
 
   const signIn = useCallback(async ({ password }) => {
     const realm = await getRealm();
 
-    const users = realm.objects('User');
+    const users = realm.objects<User>('UserSchema');
 
     const user = users.filtered(`password = "${password}"`);
 
     if (user) {
-      await AsyncStorage.setItem('@LockerIO:user', JSON.stringify(user[0]));
+      await AsyncStorage.setItem('@LockerIO:user', user[0].id);
 
-      setLoggedUser((user[0] as unknown) as User);
+      setUserId(user[0].id);
 
       return;
     }
 
-    setLoggedUser(undefined);
+    setUserId(undefined);
   }, []);
 
   const signOut = useCallback(async () => {
     await AsyncStorage.removeItem('@LockerIO:user');
 
-    setLoggedUser(undefined);
+    setUserId(undefined);
   }, []);
 
   const changeAppStage = useCallback(async (stage: '1' | '2' | undefined) => {
@@ -84,6 +93,7 @@ const AuthProvider: React.FC = ({ children }) => {
     <AuthContext.Provider
       value={{
         loading,
+        userId,
         appStage,
         changeAppStage,
         signIn,
