@@ -1,16 +1,11 @@
+import { ObjectSchema } from 'realm';
+
 export default class UserSchema {
-  id!: string;
-
-  name!: string;
-
-  password!: string;
-
-  static schema: Realm.ObjectSchema = {
+  static schema: ObjectSchema = {
     name: 'User',
     primaryKey: 'id',
     properties: {
-      id: 'string',
-      name: 'string',
+      id: { type: 'string', indexed: true },
       password: 'string',
     },
   };
