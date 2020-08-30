@@ -36,6 +36,7 @@ const AuthProvider: React.FC = ({ children }) => {
 
   useEffect(() => {
     async function loadStoredData(): Promise<void> {
+      // await AsyncStorage.multiRemove(['@LockerIO:appStage', '@LockerIO:user']);
       const [storedAppStage, storedUser] = await AsyncStorage.multiGet([
         '@LockerIO:appStage',
         '@LockerIO:user',
