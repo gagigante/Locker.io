@@ -1,5 +1,8 @@
-import React, { useCallback, useState, useEffect } from 'react';
-import { v4 as uuidv4 } from 'uuid';
+import React, { useCallback, useState, useRef } from 'react';
+import { TextInput as ReactNativeTextInput } from 'react-native';
+
+import UUIDGenerator from 'react-native-uuid-generator';
+
 import Icon from 'react-native-vector-icons/Feather';
 
 import getRealm from '../../database';
@@ -23,6 +26,8 @@ import Logo from '../../assets/locker_53876-25496.png';
 import errorAnimation from '../../assets/11201-fail.json';
 
 const SignUp: React.FC = () => {
+  const passwordConfirmationInputRef = useRef<ReactNativeTextInput>(null);
+
   const { changeAppStage } = useAuth();
 
   const [password, setPassword] = useState('');
@@ -39,8 +44,10 @@ const SignUp: React.FC = () => {
   }, []);
 
   const registerNewUser = useCallback(async () => {
+    const userId = await UUIDGenerator.getRandomUUID();
+
     const data = {
-      id: uuidv4(),
+      id: userId,
       password,
     };
 
@@ -57,7 +64,7 @@ const SignUp: React.FC = () => {
   const handleSubmit = useCallback(async () => {
     if (password !== '' && repeatPassword !== '') {
       if (password === repeatPassword) {
-        registerNewUser();
+        await registerNewUser();
         changeAppStage('2');
       } else {
         setModalText('As senhas não se correspondem!');
@@ -79,6 +86,7 @@ const SignUp: React.FC = () => {
         <IconView>
           <Icon name="lock" size={28} color="#f83f61" />
         </IconView>
+
         <TextInput
           value={password}
           onChangeText={setPassword}
@@ -88,7 +96,12 @@ const SignUp: React.FC = () => {
           autoCorrect={false}
           placeholder="Senha"
           placeholderTextColor="rgba(255,255,255,0.6)"
+          returnKeyType="next"
+          onSubmitEditing={() => {
+            passwordConfirmationInputRef.current?.focus();
+          }}
         />
+
         <HideButton onPress={() => setHidePassword(!hidePassword)}>
           {hidePassword ? (
             <Icon name="eye" size={28} color="#fff" />
@@ -102,7 +115,9 @@ const SignUp: React.FC = () => {
         <IconView>
           <Icon name="lock" size={28} color="#f83f61" />
         </IconView>
+
         <TextInput
+          ref={passwordConfirmationInputRef}
           value={repeatPassword}
           onChangeText={setRepeatPassword}
           autoCapitalize="none"
@@ -110,6 +125,7 @@ const SignUp: React.FC = () => {
           autoCorrect={false}
           secureTextEntry={hideRepeatPassword}
           placeholder="Confirmar senha"
+          returnKeyType="send"
           placeholderTextColor="rgba(255,255,255,0.6)"
           onSubmitEditing={handleSubmit}
         />
