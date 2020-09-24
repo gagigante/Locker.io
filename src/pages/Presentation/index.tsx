@@ -1,14 +1,13 @@
-/* eslint-disable global-require */
 import React, { useCallback, useEffect } from 'react';
-import { v4 as uuidv4 } from 'uuid';
 import AppIntroSlider from 'react-native-app-intro-slider';
-import { Alert } from 'react-native';
 
 import Icon from 'react-native-vector-icons/Feather';
 
 import getRealm from '../../database';
 
 import { useAuth } from '../../hooks/auth';
+
+import ICategorySchema from '../../database/dtos/ICategorySchema';
 
 import {
   SlideView,
@@ -34,37 +33,39 @@ const Presentation: React.FC = () => {
 
   useEffect(() => {
     async function insertDefaultCategories(): Promise<void> {
-      try {
-        const realm = await getRealm();
+      const realm = await getRealm();
 
-        realm.write(() => {
-          realm.create('Category', {
-            id: uuidv4(),
-            CategoryName: 'Serviços',
-            CategoryColor: 'blue',
-          });
-          realm.create('Category', {
-            id: uuidv4(),
-            CategoryName: 'E-mail',
-            CategoryColor: 'red',
-          });
-          realm.create('Category', {
-            id: uuidv4(),
-            CategoryName: 'Banco',
-            CategoryColor: 'green',
-          });
-          realm.create('Category', {
-            id: uuidv4(),
-            CategoryName: 'Aplicativo',
-            CategoryColor: 'yellow',
-          });
-        });
-      } catch (err) {
-        Alert.alert(err);
+      const categories = realm.objects<ICategorySchema>('Category');
+
+      if (categories.length !== 0) {
+        return;
       }
 
-      insertDefaultCategories();
+      realm.write(() => {
+        realm.create('Category', {
+          id: '01',
+          CategoryName: 'Serviços',
+          CategoryColor: 'blue',
+        });
+        realm.create('Category', {
+          id: '02',
+          CategoryName: 'E-mail',
+          CategoryColor: 'red',
+        });
+        realm.create('Category', {
+          id: '03',
+          CategoryName: 'Banco',
+          CategoryColor: 'green',
+        });
+        realm.create('Category', {
+          id: '04',
+          CategoryName: 'Aplicativo',
+          CategoryColor: 'yellow',
+        });
+      });
     }
+
+    insertDefaultCategories();
   }, []);
 
   const slides: Islides[] = [
